@@ -1,33 +1,33 @@
-# OpenAPI Opcional
+# Optional OpenAPI
 
-## Para que sirve
+## Purpose
 
-Este bloque permite que la libreria aporte una configuracion base de OpenAPI cuando el proyecto consumidor quiera usarla.
+This block allows the library to provide a base OpenAPI configuration when the consuming project wants to use it.
 
-No intenta imponer Swagger ni OpenAPI a todos los proyectos. Por eso:
-- esta desactivado por defecto
-- la dependencia va en `provided`
-- solo se activa por propiedad
+It does not try to impose Swagger or OpenAPI on every project. That is why:
+- it is disabled by default
+- the dependency is declared as `provided`
+- it is only activated through properties
 
-## Activacion
+## Activation
 
 ```yml
 backend-toolkit:
   openapi:
     enabled: true
     title: "EcoRastro User Roles API"
-    description: "API de gestion de usuarios, roles y grupos"
+    description: "API for user, role, and group management"
     version: "v1"
 ```
 
-## Que crea
+## What it creates
 
-Cuando esta activo, registra un bean `OpenAPI` base con:
+When active, it registers a base `OpenAPI` bean with:
 - `title`
 - `description`
 - `version`
 
-## Ejemplo de uso
+## Usage example
 
 ```java
 @SpringBootApplication
@@ -35,20 +35,20 @@ public class UserRolesApplication {
 }
 ```
 
-Con la propiedad activada, el proyecto ya dispone de una configuracion OpenAPI minima comun.
+With the property enabled, the project gets a shared minimal OpenAPI configuration.
 
-## Que pasa si el consumidor no usa OpenAPI
+## What happens if the consumer does not use OpenAPI
 
-No pasa nada.
+Nothing.
 
-Si el proyecto no activa `backend-toolkit.openapi.enabled`, este bloque no se levanta.
+If the project does not enable `backend-toolkit.openapi.enabled`, this block is not loaded.
 
-## Que pasa si el consumidor ya usa su propia configuracion
+## What happens if the consumer already uses its own configuration
 
-La idea es que este bloque sirva como base simple. Si el consumidor ya tiene una configuracion propia mas rica, puede:
-- no activar esta funcionalidad
-- o sustituirla con su propia definicion
+The idea is for this block to serve as a simple base. If the consumer already has a richer configuration, it can:
+- leave this feature disabled
+- or replace it with its own definition
 
-## Resumen
+## Summary
 
-Este bloque existe para ahorrar configuracion repetida de OpenAPI, pero sin imponerla a quien no la necesite.
+This block exists to save repeated OpenAPI configuration work without imposing it on projects that do not need it.

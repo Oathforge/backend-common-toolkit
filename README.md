@@ -1,48 +1,48 @@
 # backend-common-toolkit
 
-`backend-common-toolkit` es una libreria Java standalone orientada a centralizar bloques tecnicos reutilizables en microservicios backend Spring Boot.
+`backend-common-toolkit` is a standalone Java library designed to centralize reusable technical building blocks for Spring Boot backend services.
 
-La libreria agrupa piezas de infraestructura que se repiten con frecuencia entre servicios: manejo homogéneo de errores HTTP, validaciones compartidas, soporte de `API-Key`, utilidades de cifrado y resolucion de URLs publicas de assets.
+The library groups together infrastructure components that are frequently repeated across services: consistent HTTP error handling, shared validation, `API-Key` support, encryption utilities, and public asset URL resolution.
 
-## Objetivo
+## Purpose
 
-Aportar una base tecnica comun sin introducir logica de negocio ni acoplar el consumidor a un dominio concreto.
+Provide a shared technical foundation without introducing business logic or coupling consumers to a specific domain.
 
-## Que incluye actualmente
+## What it currently includes
 
-- Modelo comun de excepciones HTTP.
-- `ProblemDetail` y manejo centralizado de errores para APIs REST.
-- Helpers de seguridad para autenticacion por `API-Key`.
-- Configuracion CORS compartida y activable por propiedades.
-- Soporte OpenAPI opcional y activable por propiedades.
-- Utilidades geoespaciales opcionales activables por propiedades.
-- Validaciones compartidas para contraseñas, UUIDs e imagenes.
-- Utilidades de cifrado para atributos persistidos.
-- Capa comun de entrega publica de assets y abstraccion de CDN.
-- DTOs simples de paginacion reutilizable.
-- Utilidades de logging para clientes `WebClient`.
-- Módulo JPA separado para quien necesite soporte relacional.
+- Shared HTTP exception model.
+- `ProblemDetail` and centralized error handling for REST APIs.
+- Security helpers for `API-Key` authentication.
+- Shared CORS configuration activated through properties.
+- Optional OpenAPI support activated through properties.
+- Optional geospatial utilities activated through properties.
+- Shared validation for passwords, UUIDs, and images.
+- Encryption utilities for persisted attributes.
+- Shared public asset delivery layer and CDN abstraction.
+- Simple reusable pagination DTOs.
+- Logging utilities for `WebClient` clients.
+- A separate JPA module for consumers that need relational support.
 
-## Estructura funcional
+## Functional structure
 
-- `exception`: jerarquia de excepciones y respuesta HTTP estandar.
-- `security/apikey`: soporte compartido para autenticacion por API key.
-- `security/cors`: configuracion CORS reutilizable y activable por propiedades.
-- `openapi`: configuracion OpenAPI opcional.
-- `geo`: utilidades geoespaciales opcionales.
-- `validator`: validaciones de entrada reutilizables.
-- `util`: cifrado y utilidades tecnicas generales.
-- `assetdelivery`: resolucion de URLs publicas e invalidacion de cache para assets.
-- `payload`: DTOs de paginacion.
-- `configuration`: helpers tecnicos de configuracion reutilizables.
+- `exception`: exception hierarchy and standard HTTP response model.
+- `security/apikey`: shared support for API key authentication.
+- `security/cors`: reusable CORS configuration activated through properties.
+- `openapi`: optional OpenAPI configuration.
+- `geo`: optional geospatial utilities.
+- `validator`: reusable input validation.
+- `util`: encryption and general technical utilities.
+- `assetdelivery`: public URL resolution and cache invalidation for assets.
+- `payload`: pagination DTOs.
+- `configuration`: reusable technical configuration helpers.
 
-## Enfoque de consumo
+## Consumption approach
 
-La libreria esta planteada para ser consumida como dependencia Maven normal, sin exigir un parent privado ni un BOM propietario del proyecto consumidor.
+The library is intended to be consumed as a regular Maven dependency, without requiring a private parent POM or a project-specific BOM.
 
-## Integracion basica
+## Basic integration
 
-### Dependencia Maven
+### Maven dependency
 
 ```xml
 <dependency>
@@ -52,15 +52,15 @@ La libreria esta planteada para ser consumida como dependencia Maven normal, sin
 </dependency>
 ```
 
-### Módulos de persistencia opcionales
+### Optional persistence modules
 
-Si el proyecto usa JPA/Hibernate y necesita auditoría base, `TimeOrderedUuid` o converters JPA, utiliza el módulo separado `backend-common-toolkit-jpa`.
+If the project uses JPA/Hibernate and needs base auditing, `TimeOrderedUuid`, or JPA converters, use the separate `backend-common-toolkit-jpa` module.
 
-Si el proyecto usa Spring Data MongoDB y necesita auditoría base o generación automática de IDs temporales, utiliza `backend-common-toolkit-mongo`.
+If the project uses Spring Data MongoDB and needs base auditing or automatic time-ordered ID generation, use `backend-common-toolkit-mongo`.
 
-### Ejemplos rapidos por bloque
+### Quick examples by area
 
-#### Errores HTTP
+#### HTTP errors
 
 ```java
 throw new ResourceNotFoundException("USR0001", "User not found");
@@ -78,7 +78,7 @@ backend-toolkit:
       api-key-authorities: "ROLE_READ,ROLE_ADMIN"
 ```
 
-#### CORS compartido
+#### Shared CORS
 
 ```yml
 backend-toolkit:
@@ -93,18 +93,18 @@ backend-toolkit:
       paths: "/api/**"
 ```
 
-#### OpenAPI opcional
+#### Optional OpenAPI
 
 ```yml
 backend-toolkit:
   openapi:
     enabled: true
     title: "EcoRastro User Roles API"
-    description: "API de gestion de usuarios, roles y grupos"
+    description: "API for user, role, and group management"
     version: "v1"
 ```
 
-#### Geo opcional
+#### Optional geo utilities
 
 ```yml
 backend-toolkit:
@@ -112,21 +112,21 @@ backend-toolkit:
     enabled: true
 ```
 
-#### Validacion de password
+#### Password validation
 
 ```java
 public record ChangePasswordRequest(@ValidPassword String newPassword) {
 }
 ```
 
-#### Validacion de UUID
+#### UUID validation
 
 ```java
 public record FindUserRequest(@ValidUuid String userId) {
 }
 ```
 
-#### Validacion de imagen configurable
+#### Configurable image validation
 
 ```yml
 backend-toolkit:
@@ -137,36 +137,36 @@ backend-toolkit:
       max-file-size-mb: 5
 ```
 
-#### Cifrado directo
+#### Direct encryption
 
 ```java
 String encrypted = EncryptionUtil.encrypt("my-secret-token", "base-key");
 String plain = EncryptionUtil.decrypt(encrypted, "base-key");
 ```
 
-#### Entrega publica de assets
+#### Public asset delivery
 
 ```java
 AssetDelivery delivery = new DirectAssetDelivery(key -> "https://cdn.example.com/" + key);
 String publicUrl = delivery.getFileUrlByKey("users/avatar.png");
 ```
 
-## Documentacion detallada
+## Detailed documentation
 
-- [Excepciones disponibles y ProblemDetail](docs/exceptions.md)
-- [Seguridad API key](docs/security-apikey.md)
-- [Configuracion CORS](docs/cors-configuration.md)
-- [OpenAPI opcional](docs/openapi.md)
-- [Geo util opcional](docs/geo.md)
-- [Validaciones compartidas](docs/validation.md)
-- [Cifrado y conversiones](docs/encryption.md)
-- [Entrega publica de assets](docs/asset-delivery.md)
-- [Paginacion y utilidades auxiliares](docs/utilities.md)
+- [Available exceptions and ProblemDetail](docs/exceptions.md)
+- [API key security](docs/security-apikey.md)
+- [CORS configuration](docs/cors-configuration.md)
+- [Optional OpenAPI](docs/openapi.md)
+- [Optional geo utilities](docs/geo.md)
+- [Shared validation](docs/validation.md)
+- [Encryption and conversions](docs/encryption.md)
+- [Public asset delivery](docs/asset-delivery.md)
+- [Pagination and auxiliary utilities](docs/utilities.md)
 
-## Casos de uso tipicos
+## Typical use cases
 
-- Estandarizar respuestas de error entre varios microservicios.
-- Reutilizar filtros y configuracion de autenticacion interna por API key.
-- Compartir validaciones de password e imagen sin duplicar codigo.
-- Resolver URLs publicas de ficheros desde distintos proveedores de entrega.
-- Reutilizar utilidades backend sin arrastrar JPA cuando no hace falta.
+- Standardize error responses across multiple microservices.
+- Reuse filters and internal API key authentication configuration.
+- Share password and image validation without duplicating code.
+- Resolve public file URLs through different delivery providers.
+- Reuse backend utilities without dragging in JPA when it is not needed.

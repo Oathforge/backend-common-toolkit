@@ -1,21 +1,21 @@
-# Validaciones Compartidas
+# Shared Validation
 
-## Objetivo
+## Purpose
 
-La libreria incluye validaciones reutilizables para evitar reescribir reglas comunes de entrada en cada microservicio.
+The library includes reusable validations to avoid rewriting common input rules in every microservice.
 
 ## Passwords
 
-El bloque `ValidPassword` y su validador asociado permiten aplicar una politica comun de contraseñas.
+The `ValidPassword` block and its associated validator allow you to apply a shared password policy.
 
-Actualmente se contemplan reglas como:
-- longitud minima y maxima
-- al menos una mayuscula
-- al menos un digito
-- al menos un caracter especial
-- exclusion de espacios o acentos
+It currently includes rules such as:
+- minimum and maximum length
+- at least one uppercase character
+- at least one digit
+- at least one special character
+- exclusion of spaces or accents
 
-## Ejemplo de uso con DTO
+## Example usage with DTO
 
 ```java
 public record ChangePasswordRequest(
@@ -34,13 +34,13 @@ public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordReq
 
 ## UUID
 
-La libreria incluye `@ValidUuid` para validar identificadores UUID en formato string.
+The library includes `@ValidUuid` to validate UUID identifiers in string format.
 
-No se limita a comprobar que el valor tenga 36 caracteres. Valida tambien el formato canonico:
+It does not only check that the value has 36 characters. It also validates the canonical format:
 - `8-4-4-4-12`
-- solo caracteres hexadecimales validos
+- only valid hexadecimal characters
 
-## Ejemplo de uso con DTO
+## Example usage with DTO
 
 ```java
 public record FindUserRequest(
@@ -49,26 +49,26 @@ public record FindUserRequest(
 }
 ```
 
-## Ejemplo de uso en path variable
+## Example usage in a path variable
 
 ```java
-@GetMapping(\"/{userId}\")
+@GetMapping("/{userId}")
 public UserResponse getUser(@PathVariable @ValidUuid String userId) {
   return service.getUser(userId);
 }
 ```
 
-## Imagenes
+## Images
 
-`ImageFileValidator` aporta validaciones sobre:
-- extension permitida
-- tipo MIME detectado
-- tamano maximo de fichero
-- validacion basica de URLs de imagen
+`ImageFileValidator` provides validation for:
+- allowed file extension
+- detected MIME type
+- maximum file size
+- basic image URL validation
 
-## Configuracion por propiedades
+## Property-based configuration
 
-La politica de validacion de imagen ya no queda fijada a fuego dentro de la libreria. Se configura mediante propiedades externas:
+The image validation policy is not hardcoded inside the library. It is configured through external properties:
 
 ```yml
 backend-toolkit:
@@ -79,12 +79,12 @@ backend-toolkit:
       max-file-size-mb: 5
 ```
 
-Las propiedades disponibles son:
+Available properties:
 - `allowed-extensions`
 - `allowed-mime-types`
 - `max-file-size-mb`
 
-## Ejemplo de uso en upload
+## Example usage for uploads
 
 ```java
 @Service
@@ -97,12 +97,12 @@ public class AvatarService {
     imageFileValidator.isValidImageExtension(file);
     imageFileValidator.validateFileSize(file);
 
-    // continuar con almacenamiento
+    // continue with storage
   }
 }
 ```
 
-## Ejemplo de validacion de URL publica
+## Example public URL validation
 
 ```java
 public void validateCurrentImage(String imageUrl) {
@@ -110,9 +110,9 @@ public void validateCurrentImage(String imageUrl) {
 }
 ```
 
-## Ejemplo de politica explicita para otro caso de uso
+## Example explicit policy for another use case
 
-Si un servicio necesita una politica diferente a la configurada por defecto, puede pasarla de forma explicita sin depender de un metodo con nombre especifico.
+If a service needs a policy different from the configured default, it can pass it explicitly without depending on a method with a specific name.
 
 ```java
 public void uploadAnimatedImage(MultipartFile file) {
@@ -125,16 +125,16 @@ public void uploadAnimatedImage(MultipartFile file) {
 }
 ```
 
-Ese enfoque mantiene la libreria generica y evita nombres acoplados a un formato concreto.
+This approach keeps the library generic and avoids names coupled to a specific format.
 
-## Beneficios
+## Benefits
 
-- Consistencia entre servicios.
-- Menor duplicacion de reglas.
-- Mensajes de error controlados y unificados.
+- Consistency across services.
+- Less rule duplication.
+- Controlled and unified error messages.
 
-## Recomendacion
+## Recommendation
 
-Todo validador que entre aqui deberia cumplir dos condiciones:
-- ser tecnicamente generico
-- tener potencial real de reutilizacion entre varios servicios
+Any validator added here should meet two conditions:
+- it should be technically generic
+- it should have real reuse potential across multiple services

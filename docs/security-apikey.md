@@ -1,29 +1,29 @@
-# Seguridad API Key
+# API Key Security
 
-## Objetivo
+## Purpose
 
-Este bloque permite securizar endpoints tecnicos o internos mediante una `API-Key`, sin tener que reimplementar filtros y construccion de autenticacion en cada servicio.
+This block allows you to secure technical or internal endpoints with an `API-Key` without having to reimplement filters and authentication construction in every service.
 
-## Componentes
+## Components
 
 - `ApiKeyAuthFilter`
 - `ApiKeyAuthenticationFactory`
 - `ApiKeySecurityProperties`
 
-## Responsabilidad
+## Responsibility
 
-- Leer la API key desde cabeceras HTTP.
-- Compararla con el valor configurado.
-- Construir un `Authentication` valido para el contexto de Spring Security.
-- Permitir asignar authorities configurables a esa identidad tecnica.
+- Read the API key from HTTP headers.
+- Compare it with the configured value.
+- Build a valid `Authentication` for the Spring Security context.
+- Allow configurable authorities to be assigned to that technical identity.
 
-## Casos de uso
+## Use cases
 
-- Llamadas internas entre microservicios.
-- Endpoints de sincronizacion o automatizacion.
-- Integraciones tecnicas donde no compensa usar JWT completo.
+- Internal calls between microservices.
+- Synchronization or automation endpoints.
+- Technical integrations where using a full JWT would be unnecessary.
 
-## Ejemplo de configuracion YAML
+## YAML configuration example
 
 ```yml
 backend-toolkit:
@@ -35,7 +35,7 @@ backend-toolkit:
       api-key-authorities: "ROLE_READ,ROLE_ADMIN"
 ```
 
-## Ejemplo de wiring en SecurityConfig
+## Example wiring in SecurityConfig
 
 ```java
 @Configuration
@@ -65,14 +65,14 @@ public class SecurityConfig {
 }
 ```
 
-## Ejemplo de llamada HTTP
+## Example HTTP call
 
 ```bash
 curl -H "API-Key: very-secret-key" http://localhost:8080/internal/health-sync
 ```
 
-## Consideraciones
+## Considerations
 
-- La `API-Key` no sustituye por si sola una estrategia global de seguridad.
-- Conviene usarla para integraciones controladas y no como mecanismo universal.
-- Las authorities asociadas deben definirse con precision para evitar sobrepermisos.
+- An `API-Key` does not replace a global security strategy on its own.
+- It should be used for controlled integrations, not as a universal mechanism.
+- The associated authorities should be defined precisely to avoid over-permissioning.

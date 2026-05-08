@@ -1,19 +1,19 @@
-# Geo Util Opcional
+# Optional Geo Util
 
-## Para que sirve
+## Purpose
 
-`GeoUtil` aporta utilidades basicas para convertir geometria en formato WKT a `Point` y viceversa.
+`GeoUtil` provides basic utilities to convert WKT geometry into `Point` objects and vice versa.
 
-Ejemplo:
-- entrada WKT: `POINT (-3.70379 40.41678)`
-- salida: objeto `Point`
+Example:
+- WKT input: `POINT (-3.70379 40.41678)`
+- output: `Point` object
 
-## Que hace
+## What it does
 
-- `fromWKT(String wkt)`: convierte un WKT a `Point`
-- `toWKT(Point point)`: convierte un `Point` a WKT
+- `fromWKT(String wkt)`: converts WKT into a `Point`
+- `toWKT(Point point)`: converts a `Point` into WKT
 
-## Activacion
+## Activation
 
 ```yml
 backend-toolkit:
@@ -21,9 +21,9 @@ backend-toolkit:
     enabled: true
 ```
 
-Por defecto esta desactivado.
+It is disabled by default.
 
-## Ejemplo de uso
+## Usage example
 
 ```java
 @Service
@@ -39,15 +39,15 @@ public class LocationService {
 }
 ```
 
-## Importante
+## Important
 
-Este bloque no depende de PostgreSQL, MySQL, Oracle o Mongo como motor concreto. La utilidad solo trabaja con conversiones WKT usando JTS.
+This block does not depend on PostgreSQL, MySQL, Oracle, or Mongo as a specific engine. The utility only works with WKT conversions using JTS.
 
-Es decir:
-- no es una funcionalidad atada a un proveedor de base de datos
-- no necesita `hibernate-spatial` para funcionar
-- puede convivir con proyectos relacionales o no relacionales
+In other words:
+- it is not tied to a database vendor
+- it does not require `hibernate-spatial` to work
+- it can coexist with relational and non-relational projects
 
-## Resumen
+## Summary
 
-Si tu proyecto necesita manejar puntos geograficos en WKT, puedes activar `GeoUtil`. Si no lo necesita, el bloque permanece apagado y no afecta al arranque.
+If your project needs to handle geographic points in WKT, you can enable `GeoUtil`. If not, the block remains disabled and does not affect startup.

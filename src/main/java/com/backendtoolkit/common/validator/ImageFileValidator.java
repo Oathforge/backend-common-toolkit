@@ -13,21 +13,11 @@ import com.backendtoolkit.common.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Utilidad para validar ficheros e URLs de imágenes.
+ * Validates uploaded image files and public image URLs using configurable
+ * validation rules.
  * <p>
- * Proporciona métodos para:
- * <ul>
- * <li>Verificar extensión y tipo MIME de imágenes (PNG/JPG).</li>
- * <li>Comprobar el tamaño máximo permitido de un fichero.</li>
- * <li>Validar la extensión de una URL de imagen.</li>
- * </ul>
- * <p>
- * Lanzará {@link BadRequestException} con códigos de error:
- * <ul>
- * <li>IMG0001: extensión inválida o ausencia de extensión.</li>
- * <li>IMG0002: tipo MIME detectado inválido o error de lectura.</li>
- * <li>IMG0003: tamaño de fichero superior al máximo permitido.</li>
- * </ul>
+ * This component is intended for services that want to centralize extension,
+ * MIME type, and file size checks without hardcoding those rules locally.
  */
 @Component
 @RequiredArgsConstructor
@@ -38,12 +28,12 @@ public class ImageFileValidator {
 	private final ImageValidationProperties properties;
 
 	/**
-	 * Valida que el fichero upload sea una imagen con extensión y tipo MIME
-	 * adecuados (PNG, JPEG o JPG).
+	 * Validates an uploaded image using the default policy configured through
+	 * {@link ImageValidationProperties}.
+	 * <p>
+	 * The validation checks both the file extension and the detected MIME type.
 	 *
-	 * @param file el fichero a validar; si es null, no hace nada.
-	 * @throws BadRequestException si la extensión o el tipo MIME no están en los
-	 *                             valores permitidos.
+	 * @param file file to validate
 	 */
 	public void isValidImageExtension(MultipartFile file) {
 		validateImage(file, properties.getAllowedExtensions(), properties.getAllowedMimeTypes(),
@@ -51,29 +41,20 @@ public class ImageFileValidator {
 	}
 
 	/**
-	 * Valida que el fichero upload sea una imagen con extensión y tipo MIME
-	 * adecuados usando una politica de validacion explicita.
+	 * Validates an uploaded image using an explicit validation policy provided by
+	 * the caller.
+	 * <p>
+	 * This is useful when a service needs a case-specific rule set that differs
+	 * from the default configuration.
 	 *
-	 * @param file             el fichero a validar; si es null, no hace nada.
-	 * @param allowedExts      conjunto de extensiones validas para esta operacion.
-	 * @param allowedMimeTypes conjunto de tipos MIME validos para esta operacion.
-	 * @throws BadRequestException si la extensión o el tipo MIME no están en los
-	 *                             valores permitidos.
+	 * @param file file to validate
+	 * @param allowedExts allowed extensions for the operation
+	 * @param allowedMimeTypes allowed MIME types for the operation
 	 */
 	public void validateImage(MultipartFile file, Set<String> allowedExts, Set<String> allowedMimeTypes) {
 		validateImage(file, allowedExts, allowedMimeTypes, ExceptionEnum.IMG0001);
 	}
 
-	/**
-	 * Método interno que centraliza la validación de extensión y tipo MIME en
-	 * función de los conjuntos permitidos.
-	 *
-	 * @param file         el fichero a validar.
-	 * @param allowedExts  conjunto de extensiones válidas.
-	 * @param allowedMimes conjunto de tipos MIME válidos.
-	 * @param extensionException error a devolver cuando la extension no es valida.
-	 * @throws BadRequestException si no cumple con la extensión o el MIME.
-	 */
 	private void validateImage(MultipartFile file, Set<String> allowedExts, Set<String> allowedMimes,
 			ExceptionEnum extensionException) {
 		if (file != null) {
@@ -104,22 +85,23 @@ public class ImageFileValidator {
 	}
 
 	/**
-	 * Valida que el tamaño del fichero no supere el límite indicado en MB.
+	 * Validates file size using the configured maximum size defined in
+	 * {@link ImageValidationProperties}.
 	 *
-	 * @param file          el fichero a comprobar.
-	 * @param maxFileSizeMB límite máximo en megabytes.
-	 * @throws BadRequestException si el tamaño supera maxFileSizeMB.
+	 * @param file file to validate
 	 */
 	public void validateFileSize(MultipartFile file) {
 		validateFileSize(file, properties.getMaxFileSizeMb());
 	}
 
 	/**
-	 * Valida que el tamaño del fichero no supere el límite indicado en MB.
+	 * Validates file size against the provided maximum size in megabytes.
+	 * <p>
+	 * This overload is useful when a service needs a one-off size limit that
+	 * should not replace the shared default configuration.
 	 *
-	 * @param file          el fichero a comprobar.
-	 * @param maxFileSizeMB límite máximo en megabytes.
-	 * @throws BadRequestException si el tamaño supera maxFileSizeMB.
+	 * @param file file to validate
+	 * @param maxFileSizeMB maximum allowed size in megabytes
 	 */
 	public void validateFileSize(MultipartFile file, long maxFileSizeMB) {
 		long fileSizeInBytes = file.getSize();
@@ -132,11 +114,13 @@ public class ImageFileValidator {
 	}
 
 	/**
-	 * Valida que la URL dada apunte a un fichero con extensión válida (PNG, JPEG o
-	 * JPG).
+	 * Validates that the provided image URL ends with one of the configured image
+	 * extensions.
+	 * <p>
+	 * This method is useful when a service stores or receives public image URLs
+	 * and still wants to enforce the same extension policy used for uploads.
 	 *
-	 * @param url la URL de la imagen.
-	 * @throws BadRequestException si la extensión no está en VALID_EXTENSIONS.
+	 * @param url image URL to validate
 	 */
 	public void isValidImageUrl(String url) {
 		String fileExtension = getFileExtensionFromUrl(url);
@@ -146,13 +130,6 @@ public class ImageFileValidator {
 		}
 	}
 
-	/**
-	 * Extrae la extensión de fichero de una URL o nombre.
-	 *
-	 * @param url la cadena que contiene el nombre o la URL.
-	 * @return la extensión en minúsculas.
-	 * @throws BadRequestException si no hay extensión o está malformada.
-	 */
 	private String getFileExtensionFromUrl(String url) {
 		int lastDotIndex = url.lastIndexOf('.');
 		if (lastDotIndex == -1 || lastDotIndex == url.length() - 1) {

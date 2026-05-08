@@ -1,8 +1,8 @@
-# Paginacion y Utilidades Auxiliares
+# Pagination and Auxiliary Utilities
 
-## Paginacion
+## Pagination
 
-La libreria incluye dos DTOs simples para estandarizar respuestas paginadas en APIs REST:
+The library includes simple DTOs to standardize paginated responses in REST APIs:
 
 - `PaginatedDTO<T>`
 - `PaginationDTO`
@@ -10,49 +10,49 @@ La libreria incluye dos DTOs simples para estandarizar respuestas paginadas en A
 
 ### `PaginatedDTO<T>`
 
-#### Descripcion
+#### Description
 
-`PaginatedDTO<T>` es una clase generica diseñada para encapsular una lista de elementos de tipo `T` junto con la informacion de paginacion asociada.
+`PaginatedDTO<T>` is a generic class designed to encapsulate a list of elements of type `T` together with the associated pagination information.
 
-Es util cuando un endpoint necesita devolver:
-- los elementos de la pagina actual
-- el numero de pagina solicitado
-- el tamano de pagina aplicado
-- el total de elementos disponibles
+It is useful when an endpoint needs to return:
+- the elements of the current page
+- the requested page number
+- the applied page size
+- the total number of available elements
 
-#### Atributos
+#### Attributes
 
-- `elements`: lista de elementos del tipo `T`.
-- `pagination`: instancia de `PaginationDTO` con el detalle de paginacion.
+- `elements`: list of elements of type `T`.
+- `pagination`: `PaginationDTO` instance with the pagination details.
 
-#### Metodo principal
+#### Main method
 
 ##### `build(List<T> elements, int page, int size, Long totalElements)`
 
-Metodo estatico que facilita la construccion del DTO completo a partir de una lista y sus metadatos.
+Static method that simplifies the construction of the full DTO from a list and its metadata.
 
-**Parametros**:
-- `elements`: elementos de la pagina actual.
-- `page`: numero de pagina actual.
-- `size`: tamano de pagina.
-- `totalElements`: numero total de registros disponibles.
+**Parameters**:
+- `elements`: elements of the current page.
+- `page`: current page number.
+- `size`: page size.
+- `totalElements`: total number of available records.
 
-**Retorno**:
-- una nueva instancia de `PaginatedDTO<T>` lista para devolverse por API.
+**Returns**:
+- a new `PaginatedDTO<T>` instance ready to be returned by the API.
 
 ### `PaginationDTO`
 
-#### Descripcion
+#### Description
 
-`PaginationDTO` es el objeto que concentra los metadatos de paginacion de una respuesta.
+`PaginationDTO` is the object that contains the pagination metadata of a response.
 
-#### Atributos
+#### Attributes
 
-- `pageNumber`: numero de pagina actual.
-- `pageSize`: tamano de pagina aplicado.
-- `totalElements`: total de registros disponibles.
+- `pageNumber`: current page number.
+- `pageSize`: applied page size.
+- `totalElements`: total number of available records.
 
-## Ejemplo de uso en un servicio
+## Example usage in a service
 
 ```java
 public PaginatedDTO<UserResponse> getUsers(Page<User> page) {
@@ -68,9 +68,9 @@ public PaginatedDTO<UserResponse> getUsers(Page<User> page) {
 }
 ```
 
-## Ejemplo con `PaginationUtils`
+## Example with `PaginationUtils`
 
-Cuando ya tienes una lista completa en memoria y quieres paginarla de forma simple sin repetir el bloque de slicing manual, puedes usar `PaginationUtils`.
+When you already have a full list in memory and want to paginate it simply without repeating the manual slicing block, you can use `PaginationUtils`.
 
 ```java
 List<UserResponse> allUsers = userRepository.findAll().stream()
@@ -80,14 +80,14 @@ List<UserResponse> allUsers = userRepository.findAll().stream()
 PaginatedDTO<UserResponse> response = PaginationUtils.createPaginatedDto(allUsers, page, size);
 ```
 
-Esto es util cuando:
-- el origen ya no es un `Page<T>` de Spring Data
-- has compuesto la lista tras combinar varias fuentes
-- quieres mantener el mismo formato de respuesta paginada
+This is useful when:
+- the source is no longer a Spring Data `Page<T>`
+- you built the list after combining multiple sources
+- you want to keep the same paginated response format
 
-## Ejemplo de uso en un controlador
+## Example usage in a controller
 
-Este ejemplo muestra el formato de uso en un endpoint. La logica de acceso a datos deberia vivir en el servicio, no en el controlador.
+This example shows the usage pattern in an endpoint. Data access logic should live in the service, not in the controller.
 
 ```java
 @GetMapping
@@ -109,7 +109,7 @@ public PaginatedDTO<UserResponse> getAllUsers(
 }
 ```
 
-## Ejemplo de respuesta JSON
+## Example JSON response
 
 ```json
 {
@@ -131,16 +131,16 @@ public PaginatedDTO<UserResponse> getAllUsers(
 }
 ```
 
-## Logging de WebClient
+## WebClient logging
 
-`WebClientLoggingFilter` aporta filtros reutilizables para trazar peticiones y respuestas cuando se trabaja con `WebClient`.
+`WebClientLoggingFilter` provides reusable filters to trace requests and responses when working with `WebClient`.
 
-Esto es util para:
-- depuracion de clientes HTTP
-- inspeccion de cabeceras y estado de respuesta
-- soporte tecnico durante integraciones
+This is useful for:
+- debugging HTTP clients
+- inspecting headers and response status
+- technical support during integrations
 
-## Ejemplo de uso con WebClient
+## Example usage with WebClient
 
 ```java
 @Bean
@@ -153,9 +153,9 @@ WebClient partnerClient(WebClient.Builder builder) {
 }
 ```
 
-## Criterio de inclusion
+## Inclusion criteria
 
-Las utilidades de este bloque solo tienen sentido aqui si:
-- son tecnicas y no de dominio
-- tienen una API estable
-- son reutilizables entre varios servicios
+Utilities in this block only make sense here if:
+- they are technical rather than domain-specific
+- they expose a stable API
+- they are reusable across multiple services

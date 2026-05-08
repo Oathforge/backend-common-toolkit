@@ -6,6 +6,13 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
 import reactor.core.publisher.Mono;
 
+/**
+ * Factory for reusable request and response logging filters for
+ * {@code WebClient}.
+ * <p>
+ * These filters are intended for troubleshooting and integration support, and
+ * only produce output when trace logging is enabled.
+ */
 public class WebClientLoggingFilter {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebClientLoggingFilter.class);
@@ -14,6 +21,12 @@ public class WebClientLoggingFilter {
 
 	}
 
+	/**
+	 * Creates a filter that logs outgoing requests at trace level, including
+	 * method, target URL, and headers.
+	 *
+	 * @return request logging filter
+	 */
 	public static ExchangeFilterFunction logRequest() {
 		return ExchangeFilterFunction.ofRequestProcessor(request -> {
 			if (logger.isTraceEnabled()) {
@@ -25,6 +38,12 @@ public class WebClientLoggingFilter {
 		});
 	}
 
+	/**
+	 * Creates a filter that logs incoming responses at trace level, including
+	 * status code and response headers.
+	 *
+	 * @return response logging filter
+	 */
 	public static ExchangeFilterFunction logResponse() {
 		return ExchangeFilterFunction.ofResponseProcessor(response -> {
 			if (logger.isTraceEnabled()) {

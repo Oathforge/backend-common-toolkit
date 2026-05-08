@@ -4,6 +4,13 @@ import java.util.function.Function;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * {@link AssetDelivery} implementation that resolves public URLs directly from
+ * the provided key resolver.
+ * <p>
+ * This implementation is intended for scenarios where asset exposure is purely
+ * deterministic and there is no cache invalidation workflow to execute.
+ */
 @RequiredArgsConstructor
 public class DirectAssetDelivery implements AssetDelivery {
 

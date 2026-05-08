@@ -1,33 +1,33 @@
-# Configuracion CORS
+# CORS Configuration
 
-## Objetivo
+## Purpose
 
-Este bloque permite activar una configuracion CORS compartida desde la propia libreria, evitando que cada microservicio tenga que reimplementar el `CorsFilter` y el binding de propiedades.
+This block allows a shared CORS configuration to be activated directly from the library, avoiding the need for each microservice to reimplement its own `CorsFilter` and property binding.
 
-La configuracion es opcional y solo se activa si se informa explicitamente en `application.yml`.
+The configuration is optional and is only activated when explicitly configured in `application.yml`.
 
-## Componentes
+## Components
 
 - `CorsFilterConfiguration`
 - `CorsProperties`
 
-## Como se activa
+## How it is activated
 
-La configuracion CORS se activa unicamente cuando la propiedad `backend-toolkit.security.cors.enabled` vale `true`.
+CORS configuration is activated only when the `backend-toolkit.security.cors.enabled` property is set to `true`.
 
-Si no se informa este bloque, la libreria no registra ningun `CorsFilter`.
+If this block is not configured, the library does not register any `CorsFilter`.
 
-## Propiedades disponibles
+## Available properties
 
-- `enabled`: activa o desactiva la configuracion CORS compartida.
-- `allowed-origin-patterns`: patrones de origen permitidos.
-- `allowed-methods`: metodos HTTP permitidos.
-- `allowed-headers`: cabeceras HTTP permitidas.
-- `allow-credentials`: permite o no credenciales en las solicitudes CORS.
-- `max-age`: tiempo maximo en segundos para cachear el resultado del preflight.
-- `paths`: rutas sobre las que aplicar la configuracion.
+- `enabled`: enables or disables the shared CORS configuration.
+- `allowed-origin-patterns`: allowed origin patterns.
+- `allowed-methods`: allowed HTTP methods.
+- `allowed-headers`: allowed HTTP headers.
+- `allow-credentials`: whether credentials are allowed in CORS requests.
+- `max-age`: maximum time in seconds to cache the preflight result.
+- `paths`: routes where the configuration should be applied.
 
-## Ejemplo de configuracion
+## Configuration example
 
 ```yml
 backend-toolkit:
@@ -42,9 +42,9 @@ backend-toolkit:
       paths: "/api/**,/public/**"
 ```
 
-## Ejemplo de uso en un microservicio
+## Example usage in a microservice
 
-No hace falta crear ninguna clase adicional si el paquete de la libreria entra en el escaneo de Spring.
+You do not need to create any additional class if the library package is included in Spring scanning.
 
 ```java
 @SpringBootApplication
@@ -52,24 +52,24 @@ public class ApiApplication {
 }
 ```
 
-Con la configuracion anterior, Spring registrara automaticamente un `CorsFilter` comun para los paths indicados.
+With the configuration above, Spring will automatically register a shared `CorsFilter` for the specified paths.
 
-## Que resuelve exactamente
+## What it solves exactly
 
-Este bloque crea una instancia de `CorsFilter` basada en propiedades externas y la registra con un `UrlBasedCorsConfigurationSource`.
+This block creates a `CorsFilter` instance based on external properties and registers it with a `UrlBasedCorsConfigurationSource`.
 
-Eso permite:
-- activar o desactivar CORS sin tocar codigo
-- variar origenes y metodos por entorno
-- centralizar el comportamiento entre servicios
+This allows you to:
+- enable or disable CORS without touching code
+- vary origins and methods per environment
+- centralize behavior across services
 
-## Cuando tiene sentido usarlo
+## When it makes sense to use it
 
-- cuando varios microservicios comparten politicas CORS similares
-- cuando quieres evitar una implementacion repetida del filtro
-- cuando necesitas mantener el comportamiento controlado por configuracion
+- when multiple microservices share similar CORS policies
+- when you want to avoid repeated filter implementations
+- when you need behavior to remain configuration-driven
 
-## Cuando no usarlo
+## When not to use it
 
-- si un servicio necesita una politica CORS totalmente excepcional y especifica
-- si ya existe una configuracion CORS propia del proyecto que no quieres duplicar
+- if a service needs a completely exceptional and service-specific CORS policy
+- if the project already has its own CORS configuration that you do not want to duplicate
