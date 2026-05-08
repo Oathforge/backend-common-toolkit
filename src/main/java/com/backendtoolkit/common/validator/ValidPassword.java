@@ -9,6 +9,10 @@ import java.lang.annotation.Target;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
+/**
+ * Bean Validation annotation that enforces the shared password policy defined
+ * by the toolkit.
+ */
 @Documented
 @Constraint(validatedBy = PasswordConstraintValidator.class)
 @Target({ ElementType.TYPE, ElementType.FIELD, ElementType.ANNOTATION_TYPE })

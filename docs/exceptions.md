@@ -1,109 +1,109 @@
-# Excepciones Disponibles y ProblemDetail
+# Available Exceptions and ProblemDetail
 
-## Objetivo
+## Purpose
 
-La libreria centraliza el manejo de errores para que los microservicios puedan devolver respuestas consistentes ante fallos funcionales, tecnicos o de validacion.
+The library centralizes error handling so that microservices can return consistent responses for functional, technical, or validation failures.
 
-El objetivo no es solo lanzar excepciones custom, sino tambien capturar excepciones habituales del stack Spring y transformarlas en respuestas HTTP uniformes.
+The goal is not only to throw custom exceptions, but also to capture common exceptions from the Spring stack and transform them into uniform HTTP responses.
 
-## Componentes principales
+## Main components
 
-- Jerarquia de excepciones custom en `exception`.
-- Modelo `ProblemDetail` en `exception/model`.
-- Handler centralizado en `exception/handler/ProblemDetailExceptionHandler`.
-- Enumerado `ExceptionEnum` para codigos y mensajes genericos reutilizables.
+- Custom exception hierarchy in `exception`.
+- `ProblemDetail` model in `exception/model`.
+- Centralized handler in `exception/handler/ProblemDetailExceptionHandler`.
+- `ExceptionEnum` for reusable generic codes and messages.
 
-## Beneficios
+## Benefits
 
-- Homogeneidad de respuestas entre servicios.
-- Menor duplicacion de `@ControllerAdvice`.
-- Mejor trazabilidad al trabajar con codigos de error consistentes.
-- Separacion entre error tecnico interno y contrato HTTP expuesto por API.
+- Consistent responses across services.
+- Less duplication of `@ControllerAdvice`.
+- Better traceability through consistent error codes.
+- Separation between internal technical errors and the HTTP contract exposed through the API.
 
-## Excepciones custom incluidas
+## Included custom exceptions
 
 ### `BadRequestException`
-Se lanza cuando se recibe una solicitud invalida o un dato de entrada no cumple reglas esperadas.
+Thrown when an invalid request is received or an input value does not meet expected rules.
 
 ```java
 throw new BadRequestException("USR0003", "The request payload is invalid");
 ```
 
 ### `ConflictException`
-Se lanza cuando hay un conflicto de estado o de regla funcional.
+Thrown when there is a state conflict or a business rule conflict.
 
 ```java
 throw new ConflictException("USR0002", "Email already exists");
 ```
 
 ### `ResourceNotFoundException`
-Se lanza cuando no existe el recurso solicitado.
+Thrown when the requested resource does not exist.
 
 ```java
 throw new ResourceNotFoundException("USR0001", "User not found for id %s".formatted(id));
 ```
 
 ### `UnauthorizedException`
-Se usa cuando la autenticacion no es valida o no esta presente.
+Used when authentication is invalid or missing.
 
 ```java
 throw new UnauthorizedException();
 ```
 
 ### `AccessDeniedException`
-Se lanza cuando el usuario esta autenticado pero no tiene permisos suficientes.
+Thrown when the user is authenticated but does not have sufficient permissions.
 
 ```java
 throw new AccessDeniedException("SEC0001", "Access denied to this operation");
 ```
 
 ### `InternalServerErrorException`
-Se lanza ante fallos internos no recuperables del backend.
+Thrown for non-recoverable internal backend failures.
 
 ```java
 throw new InternalServerErrorException("INT0001", "Unexpected internal error");
 ```
 
 ### `ServiceUnavailableException`
-Se usa cuando una dependencia externa o infraestructura no esta disponible.
+Used when an external dependency or infrastructure is unavailable.
 
 ```java
 throw new ServiceUnavailableException("EXT0001", "Cloud storage is temporarily unavailable");
 ```
 
 ### `DataIntegrityViolationException`
-Se usa para representar violaciones de integridad o restricciones persistentes.
+Used to represent integrity violations or persistent constraints.
 
 ```java
 throw new DataIntegrityViolationException("DB0001", "Cannot delete role because it is still assigned");
 ```
 
 ### `IllegalArgumentException`
-Se usa cuando se pasa un argumento invalido a una operacion interna.
+Used when an invalid argument is passed to an internal operation.
 
 ```java
 throw new IllegalArgumentException("ARG0001", "Encryption key is not initialized");
 ```
 
 ### `NotImplementedException`
-Se usa cuando una funcionalidad esta definida pero todavia no implementada.
+Used when a feature is defined but not yet implemented.
 
 ```java
 throw new NotImplementedException("GEN0009", "This export format is not implemented yet");
 ```
 
 ### `CustomException`
-Es la base comun del resto de excepciones custom con codigo y mensaje.
+This is the common base class for the other custom exceptions with code and message.
 
 ```java
 throw new CustomException("CUS0001", "Custom application error");
 ```
 
-## Excepciones framework que el handler tambien transforma
+## Framework exceptions also transformed by the handler
 
-`ProblemDetailExceptionHandler` no solo captura excepciones propias de la libreria. Tambien convierte varias excepciones habituales del ecosistema Spring/Jakarta en respuestas uniformes.
+`ProblemDetailExceptionHandler` not only captures exceptions from the library itself. It also converts several common exceptions from the Spring/Jakarta ecosystem into uniform responses.
 
-### Validacion y binding
+### Validation and binding
 
 - `MethodArgumentNotValidException`
 - `ConstraintViolationException`
@@ -111,34 +111,34 @@ throw new CustomException("CUS0001", "Custom application error");
 - `MissingServletRequestParameterException`
 - `HttpMessageNotReadableException`
 
-Estas suelen aparecer cuando un request body, un parametro o una validacion `@Valid` fallan.
+These usually appear when a request body, parameter, or `@Valid` validation fails.
 
-### Seguridad
+### Security
 
 - `org.springframework.security.access.AccessDeniedException`
 
-Se transforma a una respuesta `403 Forbidden` coherente.
+It is transformed into a consistent `403 Forbidden` response.
 
-### Concurrencia y persistencia
+### Concurrency and persistence
 
 - `OptimisticLockingFailureException`
 
-Se usa para reportar conflictos de concurrencia sobre entidades versionadas.
+Used to report concurrency conflicts on versioned entities.
 
-### Integraciones HTTP
+### HTTP integrations
 
 - `WebClientRequestException`
 - `WebClientResponseException`
 
-Permiten convertir fallos de clientes HTTP reactivos en errores consistentes.
+These allow reactive HTTP client failures to be converted into consistent errors.
 
-### Subidas de fichero
+### File uploads
 
 - `MaxUploadSizeExceededException`
 
-Se transforma en respuesta controlada cuando el upload supera el tamano maximo permitido.
+It is transformed into a controlled response when an upload exceeds the maximum allowed size.
 
-## Ejemplo de uso en un servicio
+## Example usage in a service
 
 ```java
 @Service
@@ -156,9 +156,9 @@ public class UserService {
 }
 ```
 
-## Ejemplo de respuesta HTTP resultante
+## Example resulting HTTP response
 
-Cuando esa excepcion es interceptada por `ProblemDetailExceptionHandler`, el cliente recibira una respuesta uniforme similar a esta:
+When that exception is intercepted by `ProblemDetailExceptionHandler`, the client receives a uniform response similar to this:
 
 ```json
 {
@@ -169,9 +169,9 @@ Cuando esa excepcion es interceptada por `ProblemDetailExceptionHandler`, el cli
 }
 ```
 
-## Ejemplo de activacion en Spring
+## Example Spring activation
 
-En la practica no necesitas escribir codigo adicional si el `ControllerAdvice` de la libreria esta en el classpath y forma parte del escaneo del proyecto.
+In practice, you do not need to write any extra code if the library `ControllerAdvice` is on the classpath and part of the project scan.
 
 ```java
 @SpringBootApplication
@@ -179,6 +179,6 @@ public class UserServiceApplication {
 }
 ```
 
-## Recomendacion de uso
+## Usage recommendation
 
-La libreria aporta la base comun, pero cada microservicio deberia seguir definiendo sus propios codigos de error de dominio. La idea correcta es reutilizar la infraestructura de manejo de errores, no homogeneizar a la fuerza la semantica funcional de todos los servicios.
+The library provides the shared infrastructure, but each microservice should still define its own domain-specific error codes. The right idea is to reuse the error-handling infrastructure, not to force every service into the same business semantics.

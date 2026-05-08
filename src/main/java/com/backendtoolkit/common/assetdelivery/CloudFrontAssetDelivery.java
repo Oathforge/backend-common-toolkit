@@ -8,6 +8,12 @@ import software.amazon.awssdk.services.cloudfront.CloudFrontClient;
 import software.amazon.awssdk.services.cloudfront.model.CloudFrontException;
 import software.amazon.awssdk.services.cloudfront.model.CreateInvalidationRequest;
 
+/**
+ * {@link AssetDelivery} implementation backed by AWS CloudFront.
+ * <p>
+ * It builds public URLs from a configured CloudFront base URL and uses the AWS
+ * SDK to invalidate cached objects when the underlying asset changes.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class CloudFrontAssetDelivery implements AssetDelivery {

@@ -1,31 +1,31 @@
-# Entrega Publica de Assets
+# Public Asset Delivery
 
-## Para que sirve
+## Purpose
 
-`AssetDelivery` resuelve una necesidad simple: transformar la `key` interna de un fichero en la URL publica que debe consumir el cliente.
+`AssetDelivery` solves a simple problem: turning the internal file `key` into the public URL that the client should consume.
 
-Ejemplo:
-- key en storage: `users/avatar-123.png`
-- URL publica: `https://cdn.example.com/users/avatar-123.png`
+Example:
+- storage key: `users/avatar-123.png`
+- public URL: `https://cdn.example.com/users/avatar-123.png`
 
-Ademas, si hay una CDN delante, tambien puede invalidar cache cuando el asset cambia.
+In addition, if there is a CDN in front, it can also invalidate cache when the asset changes.
 
-## Que hace y que no hace
+## What it does and what it does not do
 
-Hace:
-- convertir `key -> URL publica`
-- invalidar cache si el proveedor lo soporta
+It does:
+- convert `key -> public URL`
+- invalidate cache if the provider supports it
 
-No hace:
-- subir ficheros
-- borrar ficheros del storage
-- generar presigned URLs
+It does not do:
+- upload files
+- delete files from storage
+- generate presigned URLs
 
-En corto:
-- `storage` = donde vive el fichero
-- `asset delivery` = como se expone publicamente
+In short:
+- `storage` = where the file lives
+- `asset delivery` = how it is exposed publicly
 
-## Interfaz
+## Interface
 
 ```java
 public interface AssetDelivery {
@@ -36,9 +36,9 @@ public interface AssetDelivery {
 }
 ```
 
-## Uso tipico
+## Typical usage
 
-Lo normal es guardar en base de datos solo la `key` y devolver por API la URL publica.
+The usual approach is to store only the `key` in the database and return the public URL through the API.
 
 ```java
 public MediaResponse toDto(MediaAsset entity, AssetDelivery assetDelivery) {
@@ -49,11 +49,11 @@ public MediaResponse toDto(MediaAsset entity, AssetDelivery assetDelivery) {
 }
 ```
 
-## Implementaciones incluidas
+## Included implementations
 
 ### `DirectAssetDelivery`
 
-Construye la URL directamente a partir de una funcion.
+Builds the URL directly from a function.
 
 ```java
 AssetDelivery delivery = new DirectAssetDelivery(
@@ -61,11 +61,11 @@ AssetDelivery delivery = new DirectAssetDelivery(
 );
 ```
 
-Util cuando no necesitas invalidacion activa.
+Useful when you do not need active invalidation.
 
 ### `CloudFrontAssetDelivery`
 
-Construye la URL usando una base de CloudFront y permite invalidar cache.
+Builds the URL from a CloudFront base URL and allows cache invalidation.
 
 ```java
 AssetDelivery delivery = new CloudFrontAssetDelivery(
@@ -79,7 +79,7 @@ AssetDelivery delivery = new CloudFrontAssetDelivery(
 
 ### `EdgeServicesAssetDelivery`
 
-Construye la URL usando una base de Edge Services.
+Builds the URL from an Edge Services base URL.
 
 ```java
 AssetDelivery delivery = new EdgeServicesAssetDelivery(
@@ -88,8 +88,8 @@ AssetDelivery delivery = new EdgeServicesAssetDelivery(
 );
 ```
 
-La invalidacion aun no esta implementada en esta libreria.
+Invalidation is not implemented yet in this library.
 
-## Resumen
+## Summary
 
-Si tu servicio trabaja con ficheros y guarda una `key`, `AssetDelivery` es la pieza que traduce esa `key` a una URL publica y, cuando aplica, invalida la cache de la capa publica.
+If your service works with files and stores a `key`, `AssetDelivery` is the piece that translates that `key` into a public URL and, when applicable, invalidates the cache of the public delivery layer.

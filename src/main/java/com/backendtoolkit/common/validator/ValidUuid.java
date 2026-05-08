@@ -9,6 +9,9 @@ import java.lang.annotation.Target;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
+/**
+ * Bean Validation annotation that validates canonical UUID string values.
+ */
 @Documented
 @Constraint(validatedBy = UuidConstraintValidator.class)
 @Target({ ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE })

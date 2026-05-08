@@ -13,6 +13,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * Spring Security filter that authenticates requests carrying a valid API key
+ * header.
+ * <p>
+ * The filter checks the standard toolkit API key headers and, when the value
+ * matches the configured expected credentials, places a pre-authenticated
+ * authentication object into the current security context.
+ */
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
 	private static final String API_KEY_HEADER = "API-Key";
@@ -20,6 +28,12 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
 	private final UsernamePasswordAuthenticationToken expectedAuth;
 
+	/**
+	 * Creates a filter bound to the expected API key authentication token.
+	 *
+	 * @param expectedAuth configured authentication token used to validate incoming
+	 *                     API key requests
+	 */
 	public ApiKeyAuthFilter(UsernamePasswordAuthenticationToken expectedAuth) {
 		this.expectedAuth = expectedAuth;
 	}
