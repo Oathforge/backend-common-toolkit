@@ -46,7 +46,7 @@ The library is intended to be consumed as a regular Maven dependency, without re
 
 ```xml
 <dependency>
-  <groupId>io.backendtoolkit</groupId>
+  <groupId>org.oathforge</groupId>
   <artifactId>backend-common-toolkit</artifactId>
   <version>1.0.0-SNAPSHOT</version>
 </dependency>
