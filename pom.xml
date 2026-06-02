@@ -4,13 +4,53 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.oathforge</groupId>
+	<groupId>io.github.oathforge</groupId>
 	<artifactId>backend-common-toolkit</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>backend-common-toolkit</name>
 	<description>Standalone backend toolkit with shared HTTP errors, validation, security helpers, asset delivery and general backend utilities.</description>
+	<url>https://github.com/Oathforge/backend-common-toolkit</url>
+
+	<licenses>
+		<license>
+			<name>Apache License 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>ciorraga</id>
+			<name>Miguel Á. Ciorraga</name>
+			<organization>Oathforge</organization>
+			<organizationUrl>https://github.com/Oathforge</organizationUrl>
+			<url>https://github.com/Ciorraga</url>
+		</developer>
+		<developer>
+			<id>jandebora</id>
+			<name>Carlos C. Bravo</name>
+			<organization>Oathforge</organization>
+			<organizationUrl>https://github.com/Oathforge</organizationUrl>
+			<url>https://github.com/jandebora</url>
+		</developer>
+		<developer>
+			<id>martinand0</id>
+			<name>Andreo</name>
+			<organization>Oathforge</organization>
+			<organizationUrl>https://github.com/Oathforge</organizationUrl>
+			<url>https://github.com/martinand0</url>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/Oathforge/backend-common-toolkit.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/Oathforge/backend-common-toolkit.git</developerConnection>
+		<url>https://github.com/Oathforge/backend-common-toolkit</url>
+		<tag>HEAD</tag>
+	</scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -27,6 +67,11 @@
 		<openapi.version>2.8.15</openapi.version>
 		<jts.version>1.20.0</jts.version>
 		<maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
+		<maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+		<maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+		<maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
+		<central-publishing-maven-plugin.version>0.9.0</central-publishing-maven-plugin.version>
+		<gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
 	</properties>
 
 	<dependencyManagement>
@@ -140,6 +185,82 @@
 					<parameters>true</parameters>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>${maven-source-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${maven-javadoc-plugin.version}</version>
+				<configuration>
+					<failOnError>false</failOnError>
+					<doclint>none</doclint>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${maven-gpg-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<gpgArguments>
+								<arg>--batch</arg>
+								<arg>--pinentry-mode</arg>
+								<arg>loopback</arg>
+							</gpgArguments>
+							<passphrase>${gpg.passphrase}</passphrase>
+						</configuration>
+					</plugin>
+
+					<plugin>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>${central-publishing-maven-plugin.version}</version>
+						<extensions>true</extensions>
+						<configuration>
+							<publishingServerId>central</publishingServerId>
+							<autoPublish>true</autoPublish>
+							<waitUntil>published</waitUntil>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
