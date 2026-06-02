@@ -21,6 +21,7 @@ Provide a shared technical foundation without introducing business logic or coup
 - Shared public asset delivery layer and CDN abstraction.
 - Simple reusable pagination DTOs.
 - Logging utilities for `WebClient` clients.
+- Reusable resilience layer for outbound calls with `@ResilientOperation`.
 - A separate JPA module for consumers that need relational support.
 
 ## Functional structure
@@ -35,6 +36,7 @@ Provide a shared technical foundation without introducing business logic or coup
 - `assetdelivery`: public URL resolution and cache invalidation for assets.
 - `payload`: pagination DTOs.
 - `configuration`: reusable technical configuration helpers.
+- `resilience`: opt-in timeout and retry support for outbound operations.
 
 ## Consumption approach
 
@@ -151,6 +153,38 @@ AssetDelivery delivery = new DirectAssetDelivery(key -> "https://cdn.example.com
 String publicUrl = delivery.getFileUrlByKey("users/avatar.png");
 ```
 
+#### Resilient outbound calls
+
+```yml
+backend-toolkit:
+  resilience:
+    enabled: true
+    default-operation:
+      timeout: 3s
+      retry:
+        enabled: false
+        max-attempts: 3
+        wait-duration: 200ms
+    operations:
+      chain-gateway:
+        timeout: 2s
+        retry:
+          enabled: true
+          max-attempts: 3
+          wait-duration: 200ms
+```
+
+```java
+@Component
+public class ChainGatewayClient {
+
+  @ResilientOperation("chain-gateway")
+  public ChainTokenMintBatchResponseDTO mintBatch(ChainTokenMintBatchRequestDTO request) {
+    return httpClient.mintBatch(request);
+  }
+}
+```
+
 ## Detailed documentation
 
 - [Available exceptions and ProblemDetail](docs/exceptions.md)
@@ -162,6 +196,7 @@ String publicUrl = delivery.getFileUrlByKey("users/avatar.png");
 - [Encryption and conversions](docs/encryption.md)
 - [Public asset delivery](docs/asset-delivery.md)
 - [Pagination and auxiliary utilities](docs/utilities.md)
+- [Resilience for outbound operations](docs/resilience.md)
 
 ## Typical use cases
 

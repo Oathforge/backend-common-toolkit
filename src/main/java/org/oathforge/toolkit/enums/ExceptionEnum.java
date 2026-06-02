@@ -9,6 +9,9 @@ public enum ExceptionEnum {
 
 	SUN0001("Cannot connect with internal service"), SUN0002("Error retrieving service error info"),
 
+	RSL0001("Resilient operation '%s' timed out after %s"),
+	RSL0002("Resilient operation '%s' exhausted %s attempt(s)"),
+
 	GEO0001("Invalid Geolocation WKT format: %s"),
 
 	MFU0001("The file exceeds the maximum allowed size of %s"),
