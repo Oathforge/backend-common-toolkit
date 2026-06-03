@@ -10,10 +10,25 @@ import org.springframework.web.filter.CorsFilter;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Registers the shared Spring CORS filter when the toolkit CORS feature is
+ * enabled.
+ * <p>
+ * The filter is activated through `backend-toolkit.security.cors.enabled=true`
+ * and applies the configured origins, methods, headers, and paths declared in
+ * {@link CorsProperties}.
+ */
 @Configuration
 @Slf4j
 public class CorsFilterConfiguration {
 
+	/**
+	 * Creates the toolkit-managed {@link CorsFilter} from the configured CORS
+	 * properties.
+	 *
+	 * @param properties CORS settings bound from application properties
+	 * @return configured Spring CORS filter
+	 */
 	@Bean
 	@ConditionalOnProperty(value = "backend-toolkit.security.cors.enabled", havingValue = "true", matchIfMissing = false)
 	CorsFilter corsFilter(CorsProperties properties) {
