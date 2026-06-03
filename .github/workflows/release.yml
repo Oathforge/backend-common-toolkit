@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: maven-central-release-main
@@ -16,6 +17,9 @@ jobs:
   release:
     name: Publish Release
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
 
     steps:
       - name: Checkout repository
@@ -56,6 +60,11 @@ jobs:
             exit 1
           fi
 
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Create local release tag
         run: |
           git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
@@ -77,3 +86,128 @@ jobs:
           gh release create "${{ steps.version.outputs.tag }}" \
             --title "${{ steps.version.outputs.tag }}" \
             --notes "Release ${{ steps.version.outputs.tag }}"
+
+  open-next-development-version-pr:
+    name: Open Next Develop Version PR
+    runs-on: ubuntu-latest
+    needs: release
+
+    steps:
+      - name: Check whether this release came from develop
+        id: source-pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const response = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner,
+              repo,
+              commit_sha: context.sha,
+            });
+
+            const mergedDevelopPr = response.data.find((pullRequest) =>
+              pullRequest.merged_at &&
+              pullRequest.base.ref === 'main' &&
+              pullRequest.head.ref === 'develop'
+            );
+
+            core.setOutput('should_bump', mergedDevelopPr ? 'true' : 'false');
+
+      - name: Stop when the release did not come from develop
+        if: steps.source-pr.outputs.should_bump != 'true'
+        run: echo "Skipping develop version bump PR because this main release did not come from a develop -> main merge."
+
+      - name: Checkout develop
+        if: steps.source-pr.outputs.should_bump == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Set up Java 21
+        if: steps.source-pr.outputs.should_bump == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Resolve next develop version
+        if: steps.source-pr.outputs.should_bump == 'true'
+        id: next-version
+        env:
+          RELEASE_VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          CURRENT_VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)
+          EXPECTED_VERSION="${RELEASE_VERSION}-SNAPSHOT"
+
+          echo "current_version=${CURRENT_VERSION}" >> "$GITHUB_OUTPUT"
+
+          if [[ "${CURRENT_VERSION}" != "${EXPECTED_VERSION}" ]]; then
+            echo "should_create_pr=false" >> "$GITHUB_OUTPUT"
+            echo "Develop version is ${CURRENT_VERSION}; expected ${EXPECTED_VERSION}. Skipping automated bump."
+            exit 0
+          fi
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "${RELEASE_VERSION}"
+
+          if [[ -z "${MAJOR}" || -z "${MINOR}" || -z "${PATCH}" ]]; then
+            echo "Release version ${RELEASE_VERSION} is not a supported MAJOR.MINOR.PATCH version"
+            exit 1
+          fi
+
+          NEXT_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))-SNAPSHOT"
+
+          echo "should_create_pr=true" >> "$GITHUB_OUTPUT"
+          echo "version=${NEXT_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "branch=chore/bump-develop-to-${NEXT_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Stop when develop already moved on
+        if: steps.source-pr.outputs.should_bump == 'true' && steps.next-version.outputs.should_create_pr != 'true'
+        run: echo "Skipping automated bump PR because develop is no longer on the released snapshot version."
+
+      - name: Check for existing bump branch
+        if: steps.next-version.outputs.should_create_pr == 'true'
+        id: existing-branch
+        run: |
+          if git ls-remote --exit-code --heads origin "${{ steps.next-version.outputs.branch }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stop when bump branch already exists
+        if: steps.existing-branch.outputs.exists == 'true'
+        run: echo "Skipping automated bump PR because branch ${{ steps.next-version.outputs.branch }} already exists."
+
+      - name: Configure git identity
+        if: steps.next-version.outputs.should_create_pr == 'true' && steps.existing-branch.outputs.exists != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Update develop version
+        if: steps.next-version.outputs.should_create_pr == 'true' && steps.existing-branch.outputs.exists != 'true'
+        run: mvn -B versions:set -DnewVersion="${{ steps.next-version.outputs.version }}" -DgenerateBackupPoms=false
+
+      - name: Create bump commit
+        if: steps.next-version.outputs.should_create_pr == 'true' && steps.existing-branch.outputs.exists != 'true'
+        run: |
+          git checkout -b "${{ steps.next-version.outputs.branch }}"
+          git add pom.xml
+          git commit -m "build: bump develop to ${{ steps.next-version.outputs.version }}"
+
+      - name: Push bump branch
+        if: steps.next-version.outputs.should_create_pr == 'true' && steps.existing-branch.outputs.exists != 'true'
+        run: git push origin "${{ steps.next-version.outputs.branch }}"
+
+      - name: Open develop bump pull request
+        if: steps.next-version.outputs.should_create_pr == 'true' && steps.existing-branch.outputs.exists != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base develop \
+            --head "${{ steps.next-version.outputs.branch }}" \
+            --title "build: bump develop to ${{ steps.next-version.outputs.version }}" \
+            --reviewer "Oathforge/backend-reviewers" \
+            --body "Automated patch version bump after releasing ${{ needs.release.outputs.version }} from develop into main."
