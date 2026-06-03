@@ -5,6 +5,12 @@ import org.springframework.context.annotation.Configuration;
 
 import lombok.Data;
 
+/**
+ * Configuration properties for shared encryption support.
+ * <p>
+ * The configured key acts as the base secret used by toolkit encryption helpers
+ * and should normally come from secure external configuration.
+ */
 @Configuration
 @ConfigurationProperties(prefix = "backend-toolkit.security.encryption")
 @Data
