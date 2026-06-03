@@ -1,8 +1,16 @@
 # backend-common-toolkit
 
-`backend-common-toolkit` is a standalone Java library designed to centralize reusable technical building blocks for Spring Boot backend services.
+![Java](https://img.shields.io/badge/Java-21-blue)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)
+![License](https://img.shields.io/badge/License-Apache%202.0-blue)
+![Maven Central](https://img.shields.io/maven-central/v/io.github.oathforge/backend-common-toolkit)
+![Release](https://img.shields.io/github/v/release/Oathforge/backend-common-toolkit)
 
-The library groups together infrastructure components that are frequently repeated across services: consistent HTTP error handling, shared validation, `API-Key` support, encryption utilities, and public asset URL resolution.
+![backend-common-toolkit](images/common-toolkit-1.png)
+
+### Standalone Java library designed to centralize reusable technical building blocks for Spring Boot backend services.
+
+The library groups together infrastructure components that are frequently repeated across services: consistent HTTP error handling, shared validation, `API-Key` support, encryption utilities, `WebClient` helpers, and public asset URL resolution.
 
 ## Purpose
 
@@ -16,12 +24,13 @@ Provide a shared technical foundation without introducing business logic or coup
 - Shared CORS configuration activated through properties.
 - Optional OpenAPI support activated through properties.
 - Optional geospatial utilities activated through properties.
-- Shared validation for passwords, UUIDs, and images.
+- Shared validation for passwords, UUIDs, uploaded images, and public image URLs.
 - Encryption utilities for persisted attributes.
-- Shared public asset delivery layer and CDN abstraction.
+- Shared public asset delivery layer with direct, CloudFront, and Edge Services implementations.
 - Simple reusable pagination DTOs.
 - Logging utilities for `WebClient` clients.
 - A separate JPA module for consumers that need relational support.
+- A separate Mongo module for consumers that need Mongo auditing helpers.
 
 ## Functional structure
 
@@ -48,7 +57,7 @@ The library is intended to be consumed as a regular Maven dependency, without re
 <dependency>
   <groupId>io.github.oathforge</groupId>
   <artifactId>backend-common-toolkit</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.1</version>
 </dependency>
 ```
 
@@ -137,6 +146,12 @@ backend-toolkit:
       max-file-size-mb: 5
 ```
 
+```java
+imageFileValidator.isValidImageExtension(file);
+imageFileValidator.validateFileSize(file);
+imageFileValidator.isValidImageUrl(existingImageUrl);
+```
+
 #### Direct encryption
 
 ```java
@@ -144,11 +159,34 @@ String encrypted = EncryptionUtil.encrypt("my-secret-token", "base-key");
 String plain = EncryptionUtil.decrypt(encrypted, "base-key");
 ```
 
+#### Encryption properties
+
+```yml
+backend-toolkit:
+  security:
+    encryption:
+      key: ${APP_ENCRYPTION_KEY}
+```
+
 #### Public asset delivery
 
 ```java
 AssetDelivery delivery = new DirectAssetDelivery(key -> "https://cdn.example.com/" + key);
 String publicUrl = delivery.getFileUrlByKey("users/avatar.png");
+```
+
+Other included implementations:
+- `CloudFrontAssetDelivery`
+- `EdgeServicesAssetDelivery`
+
+#### WebClient logging
+
+```java
+WebClient client = WebClient.builder()
+    .baseUrl("https://partner.example.com")
+    .filter(WebClientLoggingFilter.logRequest())
+    .filter(WebClientLoggingFilter.logResponse())
+    .build();
 ```
 
 ## Detailed documentation
@@ -168,5 +206,6 @@ String publicUrl = delivery.getFileUrlByKey("users/avatar.png");
 - Standardize error responses across multiple microservices.
 - Reuse filters and internal API key authentication configuration.
 - Share password and image validation without duplicating code.
+- Reuse trace-level request and response logging for `WebClient` integrations.
 - Resolve public file URLs through different delivery providers.
 - Reuse backend utilities without dragging in JPA when it is not needed.

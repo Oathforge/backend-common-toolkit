@@ -2,11 +2,17 @@
 
 ## Pagination
 
-The library includes simple DTOs to standardize paginated responses in REST APIs:
+The library includes simple DTOs and a utility class to standardize paginated responses in REST APIs:
 
 - `PaginatedDTO<T>`
 - `PaginationDTO`
 - `PaginationUtils`
+
+`PaginatedDTO<T>` and `PaginationDTO` define the response shape.
+
+There are two valid usage patterns depending on where pagination happens:
+- if pagination happens in the database through Spring Data `Page<T>`, build the response with `PaginatedDTO.build(...)`
+- if pagination happens in memory from a full `List<T>`, build the response with `PaginationUtils.createPaginatedDto(...)`
 
 ### `PaginatedDTO<T>`
 
@@ -25,21 +31,6 @@ It is useful when an endpoint needs to return:
 - `elements`: list of elements of type `T`.
 - `pagination`: `PaginationDTO` instance with the pagination details.
 
-#### Main method
-
-##### `build(List<T> elements, int page, int size, Long totalElements)`
-
-Static method that simplifies the construction of the full DTO from a list and its metadata.
-
-**Parameters**:
-- `elements`: elements of the current page.
-- `page`: current page number.
-- `size`: page size.
-- `totalElements`: total number of available records.
-
-**Returns**:
-- a new `PaginatedDTO<T>` instance ready to be returned by the API.
-
 ### `PaginationDTO`
 
 #### Description
@@ -52,50 +43,36 @@ Static method that simplifies the construction of the full DTO from a list and i
 - `pageSize`: applied page size.
 - `totalElements`: total number of available records.
 
-## Example usage in a service
+## When To Use Each Approach
+
+Use `PaginatedDTO.build(...)` when:
+- the repository already returns a paginated `Page<T>`
+- the total number of elements comes from the database query
+- the service only maps the page content before returning the response
+
+Use `PaginationUtils.createPaginatedDto(...)` when:
+- the service works with a full `List<T>` in memory
+- pagination must happen after mapping, filtering, combining, or transforming data
+- you want the toolkit to slice the list and build the response metadata for you
+
+## Database Pagination With `Page<T>`
+
+This is the typical case when the repository already performs pagination.
+
+### Example repository
 
 ```java
-public PaginatedDTO<UserResponse> getUsers(Page<User> page) {
-  List<UserResponse> elements = page.getContent().stream()
-      .map(user -> new UserResponse(user.getId(), user.getEmail()))
-      .toList();
+public interface UserRepository extends JpaRepository<User, UUID> {
 
-  return PaginatedDTO.build(
-      elements,
-      page.getNumber(),
-      page.getSize(),
-      page.getTotalElements());
+  Page<User> findAllByActiveTrue(Pageable pageable);
 }
 ```
 
-## Example with `PaginationUtils`
-
-When you already have a full list in memory and want to paginate it simply without repeating the manual slicing block, you can use `PaginationUtils`.
+### Example service
 
 ```java
-List<UserResponse> allUsers = userRepository.findAll().stream()
-    .map(user -> new UserResponse(user.getId(), user.getEmail()))
-    .toList();
-
-PaginatedDTO<UserResponse> response = PaginationUtils.createPaginatedDto(allUsers, page, size);
-```
-
-This is useful when:
-- the source is no longer a Spring Data `Page<T>`
-- you built the list after combining multiple sources
-- you want to keep the same paginated response format
-
-## Example usage in a controller
-
-This example shows the usage pattern in an endpoint. Data access logic should live in the service, not in the controller.
-
-```java
-@GetMapping
-public PaginatedDTO<UserResponse> getAllUsers(
-    @RequestParam(defaultValue = "0") int page,
-    @RequestParam(defaultValue = "20") int size) {
-
-  Page<User> userPage = userRepository.findAll(PageRequest.of(page, size));
+public PaginatedDTO<UserResponse> getUsers(int page, int size) {
+  Page<User> userPage = userRepository.findAllByActiveTrue(PageRequest.of(page, size));
 
   List<UserResponse> elements = userPage.getContent().stream()
       .map(user -> new UserResponse(user.getId(), user.getEmail()))
@@ -108,6 +85,61 @@ public PaginatedDTO<UserResponse> getAllUsers(
       userPage.getTotalElements());
 }
 ```
+
+### Example controller
+
+```java
+@GetMapping
+public PaginatedDTO<UserResponse> getAllUsers(
+    @RequestParam(defaultValue = "0") int page,
+    @RequestParam(defaultValue = "20") int size) {
+  return userService.getUsers(page, size);
+}
+```
+
+## In-Memory Pagination With `PaginationUtils`
+
+Use `PaginationUtils` when the service already has the full list in memory and needs to paginate it before returning the response.
+
+This keeps pagination creation consistent and avoids repeating the manual slicing logic in every service.
+
+### Example service
+
+```java
+public PaginatedDTO<UserResponse> getUsers(int page, int size) {
+  List<UserResponse> allUsers = userRepository.findAllByActiveTrue().stream()
+      .map(user -> new UserResponse(user.getId(), user.getEmail()))
+      .toList();
+
+  return PaginationUtils.createPaginatedDto(allUsers, page, size);
+}
+```
+
+### Example repository
+
+```java
+public interface UserRepository extends JpaRepository<User, UUID> {
+
+  List<User> findAllByActiveTrue();
+}
+```
+
+### Example controller
+
+```java
+@GetMapping
+public PaginatedDTO<UserResponse> getAllUsers(
+    @RequestParam(defaultValue = "0") int page,
+    @RequestParam(defaultValue = "20") int size) {
+  return userService.getUsers(page, size);
+}
+```
+
+This is useful when:
+- the source is no longer a Spring Data `Page<T>`
+- the service needs to paginate a list in memory before returning it
+- you built the list after combining multiple sources
+- you want to keep the same paginated response format
 
 ## Example JSON response
 
