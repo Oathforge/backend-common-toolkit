@@ -202,6 +202,7 @@ jobs:
 
       - name: Open develop bump pull request
         if: steps.next-version.outputs.should_create_pr == 'true' && steps.existing-branch.outputs.exists != 'true'
+        id: create-pr
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -209,5 +210,25 @@ jobs:
             --base develop \
             --head "${{ steps.next-version.outputs.branch }}" \
             --title "build: bump develop to ${{ steps.next-version.outputs.version }}" \
-            --reviewer "Oathforge/backend-reviewers" \
             --body "Automated patch version bump after releasing ${{ needs.release.outputs.version }} from develop into main."
+
+          PR_NUMBER=$(gh pr list \
+            --base develop \
+            --head "${{ steps.next-version.outputs.branch }}" \
+            --json number \
+            --jq '.[0].number')
+
+          echo "number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+
+      - name: Request team review for develop bump pull request
+        if: steps.next-version.outputs.should_create_pr == 'true' && steps.existing-branch.outputs.exists != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${{ github.repository }}/pulls/${{ steps.create-pr.outputs.number }}/requested_reviewers" \
+            -f team_reviewers[]='backend-reviewers'; then
+            echo "::warning::Could not request review from team 'backend-reviewers'. Verify that the team has access to ${{ github.repository }}."
+          fi
