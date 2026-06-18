@@ -1,0 +1,2 @@
+org.oathforge.toolkit.openapi.OpenApiConfiguration
+org.oathforge.toolkit.security.apikey.ApiKeySecurityAutoConfiguration
