@@ -57,7 +57,7 @@ The library is intended to be consumed as a regular Maven dependency, without re
 <dependency>
   <groupId>io.github.oathforge</groupId>
   <artifactId>backend-common-toolkit</artifactId>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>1.1.0-SNAPSHOT</version>
 </dependency>
 ```
 
