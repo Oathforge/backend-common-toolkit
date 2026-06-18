@@ -6,7 +6,7 @@
 
 	<groupId>io.github.oathforge</groupId>
 	<artifactId>backend-common-toolkit</artifactId>
-	<version>1.0.1</version>
+	<version>1.1.0</version>
 	<packaging>jar</packaging>
 
 	<name>backend-common-toolkit</name>
@@ -114,6 +114,12 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-web</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
 			<scope>provided</scope>
 		</dependency>
 

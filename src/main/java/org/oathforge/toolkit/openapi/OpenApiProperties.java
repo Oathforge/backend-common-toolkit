@@ -1,11 +1,9 @@
 package org.oathforge.toolkit.openapi;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 import lombok.Data;
 
-@Configuration
 @ConfigurationProperties(prefix = "backend-toolkit.openapi")
 @Data
 public class OpenApiProperties {
